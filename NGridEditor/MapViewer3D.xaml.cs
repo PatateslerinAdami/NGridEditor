@@ -340,13 +340,37 @@ namespace NGridMashEditor
             if (string.IsNullOrEmpty(textureName)) return defaultMat;
 
             string fileName = System.IO.Path.GetFileName(textureName);
+
             string[] files = Directory.GetFiles(_textureFolderPath, fileName, SearchOption.AllDirectories);
+
+            if (files.Length == 0)
+            {
+                string nameNoExt = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                files = Directory.GetFiles(_textureFolderPath, nameNoExt + ".dds", SearchOption.AllDirectories);
+            }
+
+            if (files.Length == 0)
+            {
+                string nameNoExt = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                files = Directory.GetFiles(_textureFolderPath, nameNoExt + ".png", SearchOption.AllDirectories);
+            }
 
             if (files.Length > 0)
             {
                 try
                 {
-                    var imageSource = DdsTextureLoader.LoadDDS(files[0]);
+                    string foundFile = files[0];
+                    ImageSource imageSource = null;
+
+                    if (foundFile.EndsWith(".dds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imageSource = DdsTextureLoader.LoadDDS(foundFile);
+                    }
+                    else
+                    {
+                        imageSource = new BitmapImage(new Uri(foundFile));
+                    }
+
                     if (imageSource != null)
                     {
                         var brush = new ImageBrush(imageSource);
@@ -355,7 +379,10 @@ namespace NGridMashEditor
                         return new DiffuseMaterial(brush);
                     }
                 }
-                catch { return new DiffuseMaterial(Brushes.Red); }
+                catch
+                {
+                    return new DiffuseMaterial(Brushes.Red);
+                }
             }
 
             return defaultMat;
@@ -373,6 +400,46 @@ namespace NGridMashEditor
             if (_wgeoVisual == null) return;
             if (ChkShowWgeo.IsChecked == true) _wgeoVisual.Content = _wgeoGroup;
             else _wgeoVisual.Content = null;
+        }
+        private void BtnLoadNvr_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog { Filter = "Simple Environment|*.nvr" };
+            if (ofd.ShowDialog() == true)
+            {
+                try
+                {
+                    var models = NvrReader.Load(ofd.FileName);
+
+                    _wgeoGroup = new Model3DGroup();
+
+                    foreach (var modelData in models)
+                    {
+                        GeometryModel3D geom = new GeometryModel3D();
+                        geom.Geometry = modelData.Mesh;
+
+                        Material mat = FindAndLoadTexture(modelData.TextureName);
+
+                        geom.Material = mat;
+                        geom.BackMaterial = mat;
+                        _wgeoGroup.Children.Add(geom);
+                    }
+
+                    if (_wgeoVisual == null)
+                    {
+                        _wgeoVisual = new ModelVisual3D();
+                        MainViewport.Children.Add(_wgeoVisual);
+                    }
+                    _wgeoVisual.Content = _wgeoGroup;
+
+                    if (ChkShowWgeo != null) ChkShowWgeo.IsChecked = true;
+
+                    MessageBox.Show($"Loaded {models.Count} NVR mesh parts.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading NVR: " + ex.Message);
+                }
+            }
         }
     }
 }
