@@ -1,0 +1,57 @@
+﻿<Window x:Class="NGridMashEditor.GenerationSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="New Map Settings" Height="380" Width="420"
+        Background="#2D2D30" Foreground="#F1F1F1" WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#3E3E42"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Padding="20">
+        <StackPanel>
+            <TextBlock Text="GENERATION SETTINGS" FontSize="16" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,10"/>
+
+            <Button Content="📂 Load Bounds from Existing .aimesh_ngrid" Height="30" Click="BtnLoadTemplate_Click" Background="#444" Foreground="White" Margin="0,0,0,15"/>
+            <Separator Background="#555" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Cell Size (Game Units per Pixel):"/>
+            <TextBox Name="TxtCellSize" Text="50.0"/>
+
+            <TextBlock Text="World Origin (Min Bounds X, Y, Z):"/>
+            <TextBlock Text="(Y determines the flat floor height)" FontSize="10" Foreground="Gray" Margin="0,0,0,5"/>
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Name="TxtMinX" Text="0.0"/>
+                <TextBox Grid.Column="2" Name="TxtMinY" Text="0.0"/>
+                <TextBox Grid.Column="4" Name="TxtMinZ" Text="0.0"/>
+            </Grid>
+
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Cancel" Height="30" Click="BtnCancel_Click" Background="#444" Foreground="White"/>
+                <Button Grid.Column="2" Content="Generate Flat Map" Height="30" Click="BtnGenerate_Click" Background="#007ACC" Foreground="White" FontWeight="Bold"/>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>
