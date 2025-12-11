@@ -1,6 +1,8 @@
 ﻿using LoLNGRIDConverter;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -16,7 +18,6 @@ namespace NGridMashEditor
         private GeometryModel3D _model;
         private Point _lastMousePos;
 
-
         private Point3D _camPos;
         private double _yaw = 0;
         private double _pitch = -45;
@@ -24,6 +25,10 @@ namespace NGridMashEditor
         private HashSet<Key> _keysDown = new HashSet<Key>();
         private System.Diagnostics.Stopwatch _timer = new System.Diagnostics.Stopwatch();
         private DispatcherTimer _uiTimer;
+
+        private string _textureFolderPath = "";
+        private Model3DGroup _wgeoGroup;
+        private ModelVisual3D _wgeoVisual;
 
         public MapViewer3D(NGrid grid)
         {
@@ -45,6 +50,7 @@ namespace NGridMashEditor
             this.MouseLeftButtonDown += (s, e) => { _lastMousePos = e.GetPosition(this); this.Cursor = Cursors.Hand; this.Focus(); };
             this.MouseLeftButtonUp += (s, e) => this.Cursor = Cursors.Arrow;
             this.MouseMove += OnMouseMove;
+
             this.KeyDown += (s, e) => { if (!_keysDown.Contains(e.Key)) _keysDown.Add(e.Key); };
             this.KeyUp += (s, e) => { if (_keysDown.Contains(e.Key)) _keysDown.Remove(e.Key); };
 
@@ -65,7 +71,6 @@ namespace NGridMashEditor
             double speed = 2000.0 * deltaTime;
             if (_keysDown.Contains(Key.LeftShift)) speed *= 4.0;
 
-  
             double radYaw = _yaw * Math.PI / 180.0;
             double radPitch = _pitch * Math.PI / 180.0;
 
@@ -75,7 +80,6 @@ namespace NGridMashEditor
             Vector3D forward = new Vector3D(fx, fy, fz);
 
             Vector3D right = new Vector3D(Math.Cos(radYaw), 0, Math.Sin(radYaw));
-
             Vector3D up = new Vector3D(0, 1, 0);
 
             if (_keysDown.Contains(Key.W)) _camPos += forward * speed;
@@ -102,11 +106,9 @@ namespace NGridMashEditor
                 if (_pitch > 89) _pitch = 89;
                 if (_pitch < -89) _pitch = -89;
             }
-
             else if (e.LeftButton == MouseButtonState.Pressed)
             {
                 double radYaw = _yaw * Math.PI / 180.0;
-
                 Vector3D right = new Vector3D(Math.Cos(radYaw), 0, Math.Sin(radYaw));
                 Vector3D forwardFlat = new Vector3D(Math.Sin(radYaw), 0, -Math.Cos(radYaw));
 
@@ -127,7 +129,7 @@ namespace NGridMashEditor
 
             double x = Math.Sin(radYaw) * Math.Cos(radPitch);
             double y = Math.Sin(radPitch);
-            double z = -Math.Cos(radYaw) * Math.Cos(radPitch); // -z is forward
+            double z = -Math.Cos(radYaw) * Math.Cos(radPitch);
 
             Cam.Position = _camPos;
             Cam.LookDirection = new Vector3D(x, y, z);
@@ -279,6 +281,98 @@ namespace NGridMashEditor
             if ((cell.visionPathingFlags & VisionPathingFlags.Brush) != 0) return NGridPalette.Brush;
             if ((cell.riverRegionFlags & RiverRegionFlags.River) != 0) return NGridPalette.River;
             return NGridPalette.Walkable;
+        }
+
+        private void BtnSelectTexFolder_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select ANY file inside the Textures folder";
+            ofd.Filter = "Texture Files|*.dds;*.png;*.jpg|All Files|*.*";
+            ofd.CheckFileExists = true;
+
+            if (ofd.ShowDialog() == true)
+            {
+                _textureFolderPath = System.IO.Path.GetDirectoryName(ofd.FileName);
+                MessageBox.Show($"Texture folder set to:\n{_textureFolderPath}");
+            }
+        }
+
+        private void BtnLoadWgeo_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog { Filter = "World Geometry|*.wgeo" };
+            if (ofd.ShowDialog() == true)
+            {
+                try
+                {
+                    var models = WGeoReader.Load(ofd.FileName);
+                    _wgeoGroup = new Model3DGroup();
+
+                    foreach (var modelData in models)
+                    {
+                        GeometryModel3D geom = new GeometryModel3D();
+                        geom.Geometry = modelData.Mesh;
+                        Material mat = FindAndLoadTexture(modelData.TextureName);
+                        geom.Material = mat;
+                        geom.BackMaterial = mat;
+                        _wgeoGroup.Children.Add(geom);
+                    }
+
+                    if (_wgeoVisual == null)
+                    {
+                        _wgeoVisual = new ModelVisual3D();
+                        MainViewport.Children.Add(_wgeoVisual);
+                    }
+                    _wgeoVisual.Content = _wgeoGroup;
+
+                    if (ChkShowWgeo != null) ChkShowWgeo.IsChecked = true;
+
+                    MessageBox.Show($"Loaded {models.Count} mesh parts.");
+                }
+                catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+            }
+        }
+
+        private Material FindAndLoadTexture(string textureName)
+        {
+            var defaultMat = new DiffuseMaterial(Brushes.Gray);
+
+            if (string.IsNullOrEmpty(_textureFolderPath)) return defaultMat;
+            if (string.IsNullOrEmpty(textureName)) return defaultMat;
+
+            string fileName = System.IO.Path.GetFileName(textureName);
+            string[] files = Directory.GetFiles(_textureFolderPath, fileName, SearchOption.AllDirectories);
+
+            if (files.Length > 0)
+            {
+                try
+                {
+                    var imageSource = DdsTextureLoader.LoadDDS(files[0]);
+                    if (imageSource != null)
+                    {
+                        var brush = new ImageBrush(imageSource);
+                        brush.ViewportUnits = BrushMappingMode.Absolute;
+                        brush.TileMode = TileMode.Tile;
+                        return new DiffuseMaterial(brush);
+                    }
+                }
+                catch { return new DiffuseMaterial(Brushes.Red); }
+            }
+
+            return defaultMat;
+        }
+
+        private void OnToggleNGrid(object sender, RoutedEventArgs e)
+        {
+            if (TerrainVisual == null) return;
+            if (ChkShowNGrid.IsChecked == true) TerrainVisual.Content = _model;
+            else TerrainVisual.Content = null;
+        }
+
+        private void OnToggleWgeo(object sender, RoutedEventArgs e)
+        {
+            if (_wgeoVisual == null) return;
+            if (ChkShowWgeo.IsChecked == true) _wgeoVisual.Content = _wgeoGroup;
+            else _wgeoVisual.Content = null;
         }
     }
 }
