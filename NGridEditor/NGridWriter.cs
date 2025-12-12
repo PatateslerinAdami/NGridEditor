@@ -64,7 +64,7 @@ namespace LoLNGRIDConverter
         {
             foreach (var cell in grid.Cells)
             {
-                file.WriteFloat(0); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0);
+                file.WriteFloat(cell.Height); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0);
                 file.WriteShort((short)cell.x);
                 file.WriteShort((short)cell.z);
                 file.WriteInt(0); file.WriteInt(0); file.WriteInt(0); file.WriteFloat(0);
@@ -95,7 +95,7 @@ namespace LoLNGRIDConverter
         {
             foreach (var cell in grid.Cells)
             {
-                file.WriteFloat(0); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0); file.WriteInt(0);
+                file.WriteFloat(cell.Height); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0); file.WriteInt(0);
                 file.WriteShort((short)cell.x);
                 file.WriteShort((short)cell.z);
                 file.WriteFloat(0); file.WriteFloat(0); file.WriteInt(0); file.WriteInt(0); file.WriteFloat(0);
@@ -122,7 +122,7 @@ namespace LoLNGRIDConverter
         {
             foreach (var cell in grid.Cells)
             {
-                file.WriteFloat(0); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0); file.WriteInt(0);
+                file.WriteFloat(cell.Height); file.WriteInt(0); file.WriteFloat(1); file.WriteInt(1); file.WriteFloat(0); file.WriteInt(0);
                 file.WriteShort((short)cell.x);
                 file.WriteShort((short)cell.z);
                 file.WriteFloat(0); file.WriteFloat(0); file.WriteInt(0); file.WriteInt(0); file.WriteFloat(0);

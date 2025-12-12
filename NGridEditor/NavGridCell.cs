@@ -14,6 +14,7 @@
 
         public int x;
         public int z;
+        public float Height;
 
         public bool hasOverride;
     }

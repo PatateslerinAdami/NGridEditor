@@ -1,134 +1,176 @@
 ﻿<Window x:Class="LoLNGRIDConverter.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoL NGrid Editor" Height="800" Width="1200" 
-        Background="#2D2D30" Foreground="#F1F1F1">
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoLNGRIDConverter"
+        mc:Ignorable="d"
+        Title="NGrid Mash Editor" Height="800" Width="1200" 
+        Background="#1E1E1E" TextElement.Foreground="#D4D4D4" TextElement.FontWeight="Normal" UseLayoutRounding="True">
 
     <Window.Resources>
         <Style TargetType="Button">
-            <Setter Property="Margin" Value="0,4"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Background" Value="#3E3E42"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="3"/>
-                </Style>
-            </Style.Resources>
+            <Setter Property="Background" Value="#333337"/>
+            <Setter Property="Foreground" Value="#F1F1F1"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3E3E42"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#007ACC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#CCCCCC"/>
-            <Setter Property="FontSize" Value="12"/>
+        <Style TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Foreground" Value="#D4D4D4"/>
         </Style>
-
-        <Style x:Key="HeaderStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#007ACC"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,15,0,5"/>
-            <Setter Property="FontSize" Value="13"/>
+        
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#333337"/>
+            <Setter Property="Foreground" Value="Black"/>
         </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="320"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="#252526" BorderBrush="#3F3F46" BorderThickness="0,0,1,0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
-                <StackPanel>
-                    <TextBlock Text="FILE OPERATIONS" Style="{StaticResource HeaderStyle}" Margin="0,0,0,5"/>
-                    <Button Name="BtnLoad" Content="Load .aimesh_ngrid" Click="BtnLoad_Click"/>
-                    <Button Name="BtnCreateFromBMP" Content="Create New from BMP" Click="BtnCreateFromBMP_Click" Background="#444"/>
-                    <Button Name="BtnView3D" Content="Open 3D Viewer" Click="BtnView3D_Click" Background="#222" Margin="0,10,0,0"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="10">
 
-                    <TextBlock Text="EDIT WALLS / FLAGS" Style="{StaticResource HeaderStyle}"/>
-                    <Button Name="BtnExportBMP" Content="Export BMP (To Paint/PS)" Click="BtnExportBMP_Click"/>
-                    <Button Name="BtnInjectBMP" Content="Inject BMP (Overwrite Walls etc.)" Click="BtnInjectBMP_Click" Background="#444" ToolTip="Updates walls etc. without breaking map size"/>
-
-                    <TextBlock Text="EDIT HEIGHT" Style="{StaticResource HeaderStyle}"/>
-                    <Grid Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="5"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Name="BtnExportHeight" Content="Export Height" Click="BtnExportHeight_Click" ToolTip="Save terrain as Grayscale BMP"/>
-                        <StackPanel Grid.Column="2">
-                            <CheckBox Name="ChkFlipY" Content="Flip Vertical" IsChecked="True" Foreground="#CCC" Margin="0,0,0,2" ToolTip="Check this if North/South are swapped"/>
-                            <CheckBox Name="ChkInvert" Content="Invert Colors" IsChecked="False" Foreground="#CCC" Margin="0,0,0,5" ToolTip="Check this if Hills are Valleys"/>
-                            <Button Name="BtnInjectHeight" Content="Inject Height" Click="BtnInjectHeight_Click" Background="#444"/>
-                        </StackPanel>
-                    </Grid>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="5"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Name="BtnShiftHeight" Content="Shift (+/-)" Click="BtnShiftHeight_Click" ToolTip="Move entire map up or down"/>
-                        <Button Grid.Column="2" Name="BtnProjectHeight" Content=" Project..." Click="BtnProjectHeight_Click" Background="#68217A" ToolTip="Copy terrain shape from another map"/>
-                    </Grid>
-                    <TextBlock Text="EDIT POSITION" Style="{StaticResource HeaderStyle}"/>
-                    <Button Name="BtnMoveMap" Content="Move World Position (X/Z)" Click="BtnMoveMap_Click" ToolTip="Change MinBounds X/Z to move map location"/>
-
-                    <TextBlock Text="SAVING" Style="{StaticResource HeaderStyle}"/>
-                    <TextBlock Text="Target Version:" Margin="0,0,0,3" FontSize="11"/>
-                    <ComboBox Name="CmbVersion" SelectedIndex="0" Margin="0,0,0,5" Padding="4">
-                        <ComboBoxItem Content="Version 3 (old map)"/>
-                        <ComboBoxItem Content="Version 5 (has like additional flags like river etc.)"/>
-                        <ComboBoxItem Content="Version 7 (i think for beyond s10 clients xD )"/>
-                    </ComboBox>
-                    <Button Name="BtnSave" Content="Save .aimesh_ngrid" Click="BtnSave_Click" Background="#007ACC" FontWeight="Bold"/>
-
-                    <TextBlock Text="MAP INFORMATION" Style="{StaticResource HeaderStyle}"/>
-                    <Border Background="#333337" CornerRadius="4" Padding="10">
+                    <GroupBox Header="File &amp; Version" Margin="0,0,0,10" Padding="5">
                         <StackPanel>
-                            <DockPanel Margin="0,2">
-                                <TextBlock Text="Version:" FontWeight="SemiBold" Width="80"/>
-                                <TextBlock Name="TxtVersion" Text="-" Foreground="White"/>
-                            </DockPanel>
-                            <DockPanel Margin="0,2">
-                                <TextBlock Text="Dimensions:" FontWeight="SemiBold" Width="80"/>
-                                <TextBlock Name="TxtDimensions" Text="-" Foreground="White"/>
-                            </DockPanel>
-                            <DockPanel Margin="0,2">
-                                <TextBlock Text="Cell Size:" FontWeight="SemiBold" Width="80"/>
-                                <TextBlock Name="TxtCellSize" Text="-" Foreground="White"/>
-                            </DockPanel>
-                            <DockPanel Margin="0,2">
-                                <TextBlock Text="Total Cells:" FontWeight="SemiBold" Width="80"/>
-                                <TextBlock Name="TxtTotalCells" Text="-" Foreground="White"/>
+                            <Button Name="BtnLoad" Content="Load .aimesh_ngrid" Height="30" Margin="0,0,0,5" Click="BtnLoad_Click"/>
+
+                            <DockPanel Margin="0,5,0,5">
+                                <Label Content="Save Version:" VerticalAlignment="Center" Foreground="#D4D4D4"/>
+                                <ComboBox Name="CmbVersion" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Height="25">
+                                    <ComboBoxItem Content="Version 3 (Old)"/>
+                                    <ComboBoxItem Content="Version 5 (Mid)"/>
+                                    <ComboBoxItem Content="Version 7 (New)"/>
+                                </ComboBox>
                             </DockPanel>
 
-                            <Separator Background="#555" Margin="0,8"/>
-
-                            <TextBlock Text="Grid Bounds" FontWeight="SemiBold" Foreground="#007ACC" Margin="0,0,0,4"/>
-                            <TextBlock Text="Min:" FontSize="11" Foreground="#999"/>
-                            <TextBlock Name="TxtMinBounds" Text="(-, -, -)" FontFamily="Consolas" Margin="0,0,0,4" Foreground="White"/>
-
-                            <TextBlock Text="Max:" FontSize="11" Foreground="#999"/>
-                            <TextBlock Name="TxtMaxBounds" Text="(-, -, -)" FontFamily="Consolas" Foreground="White"/>
+                            <Button Name="BtnSave" Content="Save NGrid" Height="30" Click="BtnSave_Click"/>
                         </StackPanel>
-                    </Border>
+                    </GroupBox>
 
-                    <TextBlock Text="CURSOR INFO" Style="{StaticResource HeaderStyle}"/>
-                    <Border Background="#333337" CornerRadius="4" Padding="10">
-                        <TextBlock Name="TxtCellDetails" Text="Hover over map..." TextWrapping="Wrap" FontFamily="Consolas"/>
-                    </Border>
+                    <GroupBox Header="Map Information" Margin="0,0,0,10" Padding="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Version:" FontWeight="Bold" Grid.Row="0" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtVersion" Text="-" Grid.Row="0" Grid.Column="1" Margin="5,2"/>
+
+                            <TextBlock Text="Size:" FontWeight="Bold" Grid.Row="1" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtDimensions" Text="-" Grid.Row="1" Grid.Column="1" Margin="5,2"/>
+
+                            <TextBlock Text="Cell Size:" FontWeight="Bold" Grid.Row="2" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtCellSize" Text="-" Grid.Row="2" Grid.Column="1" Margin="5,2"/>
+
+                            <TextBlock Text="Total Cells:" FontWeight="Bold" Grid.Row="3" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtTotalCells" Text="-" Grid.Row="3" Grid.Column="1" Margin="5,2"/>
+
+                            <TextBlock Text="Min Bounds:" FontWeight="Bold" Grid.Row="4" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtMinBounds" Text="-" Grid.Row="4" Grid.Column="1" Margin="5,2" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="Max Bounds:" FontWeight="Bold" Grid.Row="5" Grid.Column="0" Margin="0,2"/>
+                            <TextBlock Name="TxtMaxBounds" Text="-" Grid.Row="5" Grid.Column="1" Margin="5,2" TextWrapping="Wrap"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="2D Map &amp; Flags" Margin="0,0,0,10" Padding="5">
+                        <StackPanel>
+                            <Button Name="BtnExportBMP" Content="Export Map to BMP" Margin="0,2" Click="BtnExportBMP_Click"/>
+                            <Button Name="BtnCreateFromBMP" Content="Create NGrid from BMP" Margin="0,2" Click="BtnCreateFromBMP_Click"/>
+                            <Button Name="BtnInjectBMP" Content="Inject BMP (Walls/Flags)" Margin="0,2" Click="BtnInjectBMP_Click"/>
+                            <Button Name="BtnMoveMap" Content="Move Map (Offset X/Z)" Margin="0,2" Click="BtnMoveMap_Click"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Height Map" Margin="0,0,0,10" Padding="5">
+                        <StackPanel>
+                            <Button Name="BtnExportHeight" Content="Export Height to BMP" Margin="0,2" Click="BtnExportHeight_Click"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <CheckBox Name="ChkFlipY" Content="Flip Y" Margin="0,0,10,0" IsChecked="True" Foreground="#D4D4D4"/>
+                                <CheckBox Name="ChkInvert" Content="Invert Values" Foreground="#D4D4D4"/>
+                            </StackPanel>
+
+                            <Button Name="BtnInjectHeight" Content="Inject Height from BMP" Margin="0,2" Click="BtnInjectHeight_Click"/>
+                            <Button Name="BtnShiftHeight" Content="Shift Global Height (Y)" Margin="0,2" Click="BtnShiftHeight_Click"/>
+                            <Button Name="BtnProjectHeight" Content="Project Height from NGrid" Margin="0,2" Click="BtnProjectHeight_Click"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Generation" Margin="0,0,0,10" Padding="5" BorderBrush="#007ACC">
+                        <StackPanel>
+                            <TextBlock Text="Generate NGrid from 3D Mesh (.wgeo/.nvr)" FontSize="10" Foreground="Gray" Margin="0,0,0,5"/>
+                            <Button Name="BtnWgeoToNGrid" Content="Create NGrid from WGeo" Height="30" Click="BtnWgeoToNGrid_Click"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Visualization" Margin="0,0,0,10" Padding="5">
+                        <Button Name="BtnView3D" Content="Open 3D Viewer" Height="40" Click="BtnView3D_Click"/>
+                    </GroupBox>
+
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <Border Grid.Column="1" Background="#1E1E1E">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PanningMode="Both">
-                <Image Name="ImgMap" Stretch="None" MouseMove="ImgMap_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-            </ScrollViewer>
-        </Border>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#1E1E1E" Margin="10" CornerRadius="3" ClipToBounds="True" BorderBrush="#3F3F46" BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <Image Name="ImgMap" Stretch="None" MouseMove="ImgMap_MouseMove" Cursor="Cross"/>
+                </ScrollViewer>
+            </Border>
+            
+            <Border Grid.Row="1" Background="#252526" BorderBrush="#3F3F46" BorderThickness="0,1,0,0" Padding="10">
+                <TextBlock Name="TxtCellDetails" Text="Hover over the map to see cell details..." FontFamily="Consolas" FontSize="12" Foreground="#D4D4D4"/>
+            </Border>
+
+            <StatusBar Grid.Row="2" Background="#007ACC" Foreground="White">
+                <StatusBarItem>
+                    <TextBlock Name="TxtCursorInfo" Text="Ready" Foreground="White"/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
     </Grid>
 </Window>

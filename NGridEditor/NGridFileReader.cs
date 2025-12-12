@@ -58,7 +58,7 @@ namespace LoLNGRIDConverter
             for (int i = 0; i < totalCellCount; i++)
             {
                 NavGridCell cell = new NavGridCell { index = i };
-                ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat();
+                cell.Height = ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat();
                 cell.x = ngridFile.ReadShort();
                 cell.z = ngridFile.ReadShort();
                 ngridFile.ReadInt(); ngridFile.ReadInt(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadShort(); ngridFile.ReadShort(); ngridFile.ReadShort(); ngridFile.ReadShort();
@@ -91,7 +91,7 @@ namespace LoLNGRIDConverter
             for (int i = 0; i < totalCellCount; i++)
             {
                 NavGridCell cell = new NavGridCell { index = i };
-                ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt();
+                cell.Height = ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadFloat(); ngridFile.ReadInt();
                 cell.x = ngridFile.ReadShort();
                 cell.z = ngridFile.ReadShort();
                 ngridFile.ReadFloat(); ngridFile.ReadFloat(); ngridFile.ReadInt(); ngridFile.ReadInt(); ngridFile.ReadFloat();

@@ -3,6 +3,7 @@ using Microsoft.VisualBasic;
 using Microsoft.Win32;
 using NGridMashEditor;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -83,11 +84,10 @@ namespace LoLNGRIDConverter
                             settings.CellSize,
                             settings.MinBounds,
                             settings.MaxBounds,
-                            // dont know how significant these offsets are, but just playing safe, or maybe i understood something wrong idk
-                            settings.SampleOffsetX,       
-                            settings.SampleOffsetZ,        
-                            settings.TemplateSampleCountX, 
-                            settings.TemplateSampleCountZ  
+                            settings.SampleOffsetX,
+                            settings.SampleOffsetZ,
+                            settings.TemplateSampleCountX,
+                            settings.TemplateSampleCountZ
                         );
 
                         ImgMap.Source = NGridRenderer.Render(_currentGrid);
@@ -381,10 +381,10 @@ namespace LoLNGRIDConverter
             float tx = x - x0;
             float ty = y - y0;
 
-            float p00 = pixels[(y0 * stride) + x0]; 
-            float p10 = pixels[(y0 * stride) + x1]; 
-            float p01 = pixels[(y1 * stride) + x0]; 
-            float p11 = pixels[(y1 * stride) + x1]; 
+            float p00 = pixels[(y0 * stride) + x0];
+            float p10 = pixels[(y0 * stride) + x1];
+            float p01 = pixels[(y1 * stride) + x0];
+            float p11 = pixels[(y1 * stride) + x1];
 
             float top = p00 + (p10 - p00) * tx;
             float bottom = p01 + (p11 - p01) * tx;
@@ -559,6 +559,46 @@ namespace LoLNGRIDConverter
             else
             {
                 MessageBox.Show("Invalid coordinates.");
+            }
+        }
+        private async void BtnWgeoToNGrid_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog { Filter = "World Geometry|*.wgeo;*.nvr" };
+            if (ofd.ShowDialog() == true)
+            {
+                try
+                {
+                    List<WGeoModelData> models;
+                    if (ofd.FileName.EndsWith(".nvr"))
+                        models = NvrReader.Load(ofd.FileName);
+                    else
+                        models = WGeoReader.Load(ofd.FileName);
+
+                    if (models.Count == 0) { MessageBox.Show("No meshes found."); return; }
+
+                    string inputSize = Microsoft.VisualBasic.Interaction.InputBox(
+                        "Enter Cell Size (e.g. 50.0):", "Generation Settings", "50.0");
+                    if (!float.TryParse(inputSize, out float cellSize) || cellSize <= 0) return;
+
+                    float offset = 0.0f;
+
+                    this.Cursor = Cursors.Wait;
+                    TxtCursorInfo.Text = "Generating NGrid from Mesh... Please wait.";
+
+                    NGrid newGrid = await WGeoToNGridGenerator.GenerateAsync(models, cellSize, offset);
+
+                    _currentGrid = newGrid;
+                    ImgMap.Source = NGridRenderer.Render(_currentGrid);
+                    UpdateInfoDisplay();
+
+                    this.Cursor = Cursors.Arrow;
+                    MessageBox.Show($"Generated NGrid!\n\nApplied Offset: {offset}");
+                }
+                catch (Exception ex)
+                {
+                    this.Cursor = Cursors.Arrow;
+                    MessageBox.Show("Error generating grid: " + ex.Message);
+                }
             }
         }
     }
